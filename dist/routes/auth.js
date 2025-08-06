@@ -94,5 +94,107 @@ router.get('/verify', auth_1.authenticateToken, async (req, res) => {
         });
     }
 });
+router.get('/me', auth_1.authenticateToken, async (req, res) => {
+    try {
+        if (!req.userId) {
+            res.status(401).json({
+                success: false,
+                error: 'Invalid token'
+            });
+            return;
+        }
+        const user = await authService_1.AuthService.getUserById(req.userId);
+        if (!user) {
+            res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            data: {
+                _id: String(user._id),
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                status: user.status
+            }
+        });
+    }
+    catch (error) {
+        console.error('Get current user route error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
+});
+router.patch('/profile', auth_1.authenticateToken, async (req, res) => {
+    try {
+        if (!req.userId) {
+            res.status(401).json({
+                success: false,
+                error: 'Invalid token'
+            });
+            return;
+        }
+        const { name, email } = req.body;
+        if (!name || !email) {
+            res.status(400).json({
+                success: false,
+                error: 'Name and email are required'
+            });
+            return;
+        }
+        const result = await authService_1.AuthService.updateProfile(req.userId, { name, email });
+        if (result.success) {
+            res.status(200).json(result);
+        }
+        else {
+            res.status(400).json(result);
+        }
+    }
+    catch (error) {
+        console.error('Update profile route error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
+});
+router.post('/change-password', auth_1.authenticateToken, async (req, res) => {
+    try {
+        if (!req.userId) {
+            res.status(401).json({
+                success: false,
+                error: 'Invalid token'
+            });
+            return;
+        }
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword) {
+            res.status(400).json({
+                success: false,
+                error: 'Current password and new password are required'
+            });
+            return;
+        }
+        const result = await authService_1.AuthService.changePassword(req.userId, currentPassword, newPassword);
+        if (result.success) {
+            res.status(200).json(result);
+        }
+        else {
+            res.status(400).json(result);
+        }
+    }
+    catch (error) {
+        console.error('Change password route error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
+});
 exports.default = router;
 //# sourceMappingURL=auth.js.map

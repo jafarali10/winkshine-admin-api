@@ -17,6 +17,7 @@ class AuthService {
             const { email, password } = credentials;
             const user = await User_1.User.findOne({
                 email: email.toLowerCase(),
+                role: 'admin',
                 isDeleted: false
             });
             if (!user) {
@@ -141,6 +142,74 @@ class AuthService {
         catch (error) {
             console.error('Get user error:', error);
             return null;
+        }
+    }
+    static async updateProfile(userId, userData) {
+        try {
+            const { name, email } = userData;
+            const existingUser = await User_1.User.findOne({
+                email: email.toLowerCase(),
+                _id: { $ne: userId },
+                isDeleted: false
+            });
+            if (existingUser) {
+                return {
+                    success: false,
+                    error: 'Email is already taken by another user'
+                };
+            }
+            const user = await User_1.User.findByIdAndUpdate(userId, {
+                name: name.trim(),
+                email: email.toLowerCase().trim()
+            }, { new: true, runValidators: true });
+            if (!user) {
+                return {
+                    success: false,
+                    error: 'User not found'
+                };
+            }
+            return {
+                success: true,
+                message: 'Profile updated successfully'
+            };
+        }
+        catch (error) {
+            console.error('Update profile error:', error);
+            return {
+                success: false,
+                error: 'Internal server error'
+            };
+        }
+    }
+    static async changePassword(userId, currentPassword, newPassword) {
+        try {
+            const user = await User_1.User.findById(userId);
+            if (!user) {
+                return {
+                    success: false,
+                    error: 'User not found'
+                };
+            }
+            const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+            if (!isCurrentPasswordValid) {
+                return {
+                    success: false,
+                    error: 'Current password is incorrect'
+                };
+            }
+            user.password = newPassword;
+            await user.save();
+            return {
+                success: true,
+                message: 'Password changed successfully'
+            };
+        }
+        catch (error) {
+            console.error('Change password error:', error);
+            return {
+                success: false,
+                error: 'Internal server error'
+            };
         }
     }
 }
