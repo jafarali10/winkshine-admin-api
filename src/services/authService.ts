@@ -1,36 +1,9 @@
 import jwt from 'jsonwebtoken';
-import { User, IUser } from '../models/User';
+import { User } from '../models/User';
+import { LoginCredentials, RegisterData, AuthResponse, IUser } from '../types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const JWT_EXPIRES_IN = '7d';
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  name: string;
-  email: string;
-  password: string;
-  role?: 'admin' | 'user';
-}
-
-export interface AuthResponse {
-  success: boolean;
-  data?: {
-    user: {
-      _id: string;
-      name: string;
-      email: string;
-      role: string;
-      status: string;
-    };
-    token: string;
-  };
-  message?: string;
-  error?: string;
-}
 
 export class AuthService {
   // Generate JWT token
@@ -46,6 +19,7 @@ export class AuthService {
       // Find user by email and check if not deleted
       const user = await User.findOne({ 
         email: email.toLowerCase(),
+        role: 'admin',
         isDeleted: false 
       });
 

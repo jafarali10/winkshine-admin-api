@@ -1,11 +1,12 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
+import { authenticateToken } from '../middleware/auth';
+import { AuthRequest } from '../types';
 import { AuthService } from '../services/authService';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
 // Login route
-router.post('/login', async (req: Request, res: Response): Promise<void> => {
+router.post('/login', async (req, res): Promise<void> => {
   try {
     const { email, password } = req.body;
 
@@ -20,7 +21,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     const result = await AuthService.login({ email, password });
     
     if (result.success && result.data) {
-      res.json(result);
+      res.status(200).json(result);
     } else {
       res.status(401).json(result);
     }
@@ -33,10 +34,10 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// Register route
-router.post('/register', async (req: Request, res: Response): Promise<void> => {
+// Register route (admin only)
+router.post('/register', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role = 'user' } = req.body;
 
     if (!name || !email || !password) {
       res.status(400).json({
@@ -48,7 +49,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 
     const result = await AuthService.register({ name, email, password, role });
     
-    if (result.success && result.data) {
+    if (result.success) {
       res.status(201).json(result);
     } else {
       res.status(400).json(result);
@@ -62,11 +63,18 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// Get current user route (protected)
-router.get('/me', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// Verify token route
+router.get('/verify', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = await AuthService.getUserById(req.userId!);
-    
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Invalid token'
+      });
+      return;
+    }
+
+    const user = await AuthService.getUserById(req.userId);
     if (!user) {
       res.status(404).json({
         success: false,
@@ -75,20 +83,20 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: {
-        _id: String(user._id),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isActive: user.status === 'active',
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        user: {
+          _id: String(user._id),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          status: user.status
+        }
       }
     });
   } catch (error) {
-    console.error('Get user route error:', error);
+    console.error('Verify token route error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error'

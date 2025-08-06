@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const authService_1 = require("../services/authService");
 const auth_1 = require("../middleware/auth");
+const authService_1 = require("../services/authService");
 const router = (0, express_1.Router)();
 router.post('/login', async (req, res) => {
     try {
@@ -16,7 +16,7 @@ router.post('/login', async (req, res) => {
         }
         const result = await authService_1.AuthService.login({ email, password });
         if (result.success && result.data) {
-            res.json(result);
+            res.status(200).json(result);
         }
         else {
             res.status(401).json(result);
@@ -30,9 +30,9 @@ router.post('/login', async (req, res) => {
         });
     }
 });
-router.post('/register', async (req, res) => {
+router.post('/register', auth_1.authenticateToken, async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role = 'user' } = req.body;
         if (!name || !email || !password) {
             res.status(400).json({
                 success: false,
@@ -41,7 +41,7 @@ router.post('/register', async (req, res) => {
             return;
         }
         const result = await authService_1.AuthService.register({ name, email, password, role });
-        if (result.success && result.data) {
+        if (result.success) {
             res.status(201).json(result);
         }
         else {
@@ -56,8 +56,15 @@ router.post('/register', async (req, res) => {
         });
     }
 });
-router.get('/me', auth_1.authenticateToken, async (req, res) => {
+router.get('/verify', auth_1.authenticateToken, async (req, res) => {
     try {
+        if (!req.userId) {
+            res.status(401).json({
+                success: false,
+                error: 'Invalid token'
+            });
+            return;
+        }
         const user = await authService_1.AuthService.getUserById(req.userId);
         if (!user) {
             res.status(404).json({
@@ -66,21 +73,21 @@ router.get('/me', auth_1.authenticateToken, async (req, res) => {
             });
             return;
         }
-        res.json({
+        res.status(200).json({
             success: true,
             data: {
-                _id: String(user._id),
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                isActive: user.status === 'active',
-                createdAt: user.createdAt,
-                updatedAt: user.updatedAt
+                user: {
+                    _id: String(user._id),
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    status: user.status
+                }
             }
         });
     }
     catch (error) {
-        console.error('Get user route error:', error);
+        console.error('Verify token route error:', error);
         res.status(500).json({
             success: false,
             error: 'Internal server error'

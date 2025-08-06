@@ -1,29 +1,4 @@
-import { IUser } from '../models/User';
-export interface LoginCredentials {
-    email: string;
-    password: string;
-}
-export interface RegisterData {
-    name: string;
-    email: string;
-    password: string;
-    role?: 'admin' | 'user';
-}
-export interface AuthResponse {
-    success: boolean;
-    data?: {
-        user: {
-            _id: string;
-            name: string;
-            email: string;
-            role: string;
-            status: string;
-        };
-        token: string;
-    };
-    message?: string;
-    error?: string;
-}
+import { LoginCredentials, RegisterData, AuthResponse, IUser } from '../types';
 export declare class AuthService {
     private static generateToken;
     static login(credentials: LoginCredentials): Promise<AuthResponse>;

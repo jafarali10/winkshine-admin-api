@@ -1,32 +1,23 @@
-import { Router, Request, Response } from 'express';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
-import { User } from '../models/User';
+import { authenticateToken } from '../middleware/auth';
+import { AuthRequest } from '../types';
+import { Router, Response } from 'express';
 
 const router = Router();
 
-// Get dashboard statistics
-router.get('/stats', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// Get dashboard stats
+router.get('/stats', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    // Get user count
-    const totalUsers = await User.countDocuments({ isDeleted: false });
-    const activeUsers = await User.countDocuments({ isDeleted: false, status: 'active' });
-    const adminUsers = await User.countDocuments({ isDeleted: false, role: 'admin' });
-
-    // Mock data for now - can be replaced with real business logic
+    // Mock dashboard stats - replace with actual data from database
     const stats = {
-      totalUsers,
-      activeUsers,
-      adminUsers,
+      totalUsers: 1250,
+      activeUsers: 1180,
+      inactiveUsers: 70,
       totalRevenue: 45600,
+      monthlyRevenue: 3800,
       customerSatisfaction: 4.5,
-      monthlyStats: [
-        { month: 'Jan', users: 120, revenue: 4500 },
-        { month: 'Feb', users: 150, revenue: 5200 },
-        { month: 'Mar', users: 180, revenue: 6100 },
-        { month: 'Apr', users: 200, revenue: 6800 },
-        { month: 'May', users: 220, revenue: 7200 },
-        { month: 'Jun', users: 250, revenue: 8100 },
-      ]
+      totalOrders: 1847,
+      pendingOrders: 23,
+      completedOrders: 1824
     };
 
     res.json({
@@ -37,35 +28,45 @@ router.get('/stats', authenticateToken, async (req: AuthRequest, res: Response):
     console.error('Dashboard stats error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch dashboard statistics'
+      error: 'Failed to fetch dashboard stats'
     });
   }
 });
 
 // Get recent activity
-router.get('/recent-activity', authenticateToken, async (req: AuthRequest, res: Response): Promise<void> => {
+router.get('/recent-activity', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    // Get recent users
-    const recentUsers = await User.find({ isDeleted: false })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select('name email role status createdAt');
-
-    const activity = recentUsers.map(user => ({
-      id: String(user._id),
-      type: 'user_registration',
-      user: {
-        name: user.name,
-        email: user.email,
-        role: user.role
+    // Mock recent activity - replace with actual data from database
+    const activities = [
+      {
+        id: 1,
+        type: 'user_registration',
+        message: 'New user registered',
+        details: 'John Doe joined the platform',
+        timestamp: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
+        icon: 'user'
       },
-      timestamp: user.createdAt,
-      description: `New ${user.role} registered: ${user.name}`
-    }));
+      {
+        id: 2,
+        type: 'order_completed',
+        message: 'Order completed',
+        details: 'Premium car wash service',
+        timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
+        icon: 'car'
+      },
+      {
+        id: 3,
+        type: 'review_received',
+        message: 'New review received',
+        details: '5-star rating from customer',
+        timestamp: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+        icon: 'star'
+      }
+    ];
 
     res.json({
       success: true,
-      data: activity
+      data: activities
     });
   } catch (error) {
     console.error('Recent activity error:', error);

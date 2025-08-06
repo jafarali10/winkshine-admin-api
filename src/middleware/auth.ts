@@ -1,10 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { AuthService } from '../services/authService';
-
-export interface AuthRequest extends Request {
-  userId?: string;
-  user?: any;
-}
+import { AuthRequest } from '../types';
 
 export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
