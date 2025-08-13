@@ -14,6 +14,14 @@ export interface IUser extends Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
+export interface ICategory extends Document {
+  name: string;
+  isDeleted: boolean;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Auth types
 export interface LoginCredentials {
   email: string;

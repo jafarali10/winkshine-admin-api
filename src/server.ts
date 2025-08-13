@@ -9,6 +9,8 @@ import authRoutes from './routes/auth';
 import dashboardRoutes from './routes/dashboard';
 import usersRoutes from './routes/users';
 import logoRoutes from './routes/logo';
+import categoryRoutes from './routes/category'
+
 
 // Load environment variables
 dotenv.config();
@@ -76,6 +78,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/logo', logoRoutes);
+app.use('/api/category', categoryRoutes);
+
 
 // Error handling middleware
 app.use((err: any, req: any, res: any, next: any) => {
@@ -97,10 +101,6 @@ app.use('*', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Winkshine Admin API running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
-  console.log(`📈 Dashboard endpoints: http://localhost:${PORT}/api/dashboard`);
-  console.log(`👥 Users endpoints: http://localhost:${PORT}/api/users`);
 });
 
 export default app; 

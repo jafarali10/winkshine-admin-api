@@ -1,8 +1,2 @@
 (node:28828) [MONGOOSE] Warning: Duplicate schema index on {"email":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
 (Use `node --trace-warnings ...` to show where the warning was created)
-🚀 Winkshine Admin API running on port 5000
-📊 Health check: http://localhost:5000/api/health
-🔐 Auth endpoints: http://localhost:5000/api/auth
-📈 Dashboard endpoints: http://localhost:5000/api/dashboard
-👥 Users endpoints: http://localhost:5000/api/users
-✅ MongoDB Connected: localhost

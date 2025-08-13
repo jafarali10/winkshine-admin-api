@@ -2,7 +2,6 @@ import { authenticateToken, requireAdmin } from '../middleware/auth';
 import { AuthRequest } from '../types';
 import { Router, Response } from 'express';
 import { User } from '../models/User';
-import bcrypt from 'bcryptjs';
 
 const router = Router();
 
@@ -431,47 +430,5 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
   }
 });
 
-// Get user statistics
-router.get('/stats/overview', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const [
-      totalUsers,
-      activeUsers,
-      inactiveUsers,
-      totalAdmins,
-      activeAdmins,
-      inactiveAdmins
-    ] = await Promise.all([
-      User.countDocuments({ isDeleted: false, role: 'user' }),
-      User.countDocuments({ isDeleted: false, role: 'user', status: 'active' }),
-      User.countDocuments({ isDeleted: false, role: 'user', status: 'inactive' }),
-      User.countDocuments({ isDeleted: false, role: 'admin' }),
-      User.countDocuments({ isDeleted: false, role: 'admin', status: 'active' }),
-      User.countDocuments({ isDeleted: false, role: 'admin', status: 'inactive' })
-    ]);
-
-    res.json({
-      success: true,
-      data: {
-        users: {
-          total: totalUsers,
-          active: activeUsers,
-          inactive: inactiveUsers
-        },
-        admins: {
-          total: totalAdmins,
-          active: activeAdmins,
-          inactive: inactiveAdmins
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Get user stats error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch user statistics'
-    });
-  }
-});
 
 export default router; 

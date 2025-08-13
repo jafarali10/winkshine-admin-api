@@ -59,7 +59,7 @@ const handleMulterError = (error: any, req: any, res: any, next: any) => {
       error: 'Only image files (JPEG, PNG, GIF, WebP) are allowed.'
     });
   }
-  
+
   console.error('Multer error:', error);
   return res.status(500).json({
     success: false,
@@ -71,7 +71,7 @@ const handleMulterError = (error: any, req: any, res: any, next: any) => {
 router.get('/', async (req: AuthRequest, res: Response) => {
   try {
     const logo = await Logo.findOne().sort({ createdAt: -1 });
-    
+
     if (!logo) {
       return res.status(404).json({
         success: false,
@@ -111,7 +111,7 @@ router.post('/upload', authenticateToken, upload.single('logo'), handleMulterErr
 
     // Get the current logo to delete its file
     const currentLogo = await Logo.findOne();
-    
+
     // Delete the old logo file if it exists
     if (currentLogo) {
       const projectRoot = process.cwd();
