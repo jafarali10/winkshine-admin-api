@@ -1,6 +1,7 @@
 import { AuthRequest } from '../types';
 import { Router, Response } from 'express';
 import { User } from '../models/User';
+import { Category } from '../models/Category'
 
 const router = Router();
 
@@ -12,9 +13,11 @@ router.get('/stats', async (req: AuthRequest, res: Response) => {
       role: 'user', 
       isDeleted: false 
     });
+    const totalCategories = await Category.countDocuments({isDeleted : false})
     
     const stats = {
       totalUsers,
+      totalCategories
     };
 
     res.json({
